@@ -2,8 +2,12 @@ const fetch = require('node-fetch');
 const FormData = require('form-data');
 
 module.exports = async (req, res) => {
-  if (req.method !== 'POST') {
-    res.status(405).json({ error: 'Method Not Allowed' });
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+  if (req.method === "OPTIONS") {
+    res.status(200).end();
     return;
   }
 
@@ -20,12 +24,12 @@ module.exports = async (req, res) => {
     form.append('file_data', buffer, name);
     form.append('name', name);
 
+    const headers = form.getHeaders();
+    headers['Authorization'] = 'apikey ' + apiKey;
+
     const response = await fetch(`https://${dc}.api.mailchimp.com/3.0/file-manager/files`, {
       method: 'POST',
-      headers: {
-        'Authorization': 'apikey ' + apiKey,
-        ...form.getHeaders()
-      },
+      headers: headers,
       body: form
     });
 
